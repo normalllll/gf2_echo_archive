@@ -1,0 +1,7 @@
+/target
+/gf2_echo_archive_output
+/.validation
+/dist
+__pycache__/
+/.idea
+/Cargo.lock

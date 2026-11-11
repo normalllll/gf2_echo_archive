@@ -1,0 +1,42 @@
+[package]
+name = "gf2_echo_archive"
+version = "0.4.0"
+edition = "2024"
+description = "Exports voices, story text, portraits and Live2D models from a local Girls' Frontline 2: Exilium installation"
+license = "MIT"
+keywords = ["girls-frontline-2", "gfl2", "live2d", "cri-hca", "game-assets"]
+categories = ["games", "multimedia::audio", "gui"]
+publish = false
+
+[dependencies]
+anyhow = "1.0.104"
+cridecoder = { git = "https://github.com/normalllll/cridecoder", rev = "93e22560b7df397f554df0752b989153eaf1b104" }
+gpui = { package = "gpui-pre", version = "0.3.11" }
+gpui-component = "0.9.0"
+gpui_platform = { package = "gpui-pre-platform", version = "0.3.11" }
+libloading = "0.8"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+lz4_flex = { version = "0.11", default-features = false, features = ["safe-decode", "std"] }
+rayon = "1.10"
+rfd = "0.17.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sys-locale = "0.3.2"
+texture2ddecoder = "0.1.2"
+walkdir = "2.5.0"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56.0"
+
+[build-dependencies]
+winresource = "0.1"
+
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[profile.release.package.cridecoder]
+opt-level = 3
