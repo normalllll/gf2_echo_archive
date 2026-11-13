@@ -3,6 +3,7 @@
 //! the text helpers shared by the story views.
 
 use super::theme::FONT_FAMILY;
+use crate::roster::speakers::is_player_placeholder;
 use crate::story::{StoryIndex, link::Line, sheet_directory};
 use gpui::px;
 use rayon::prelude::*;
@@ -283,10 +284,6 @@ pub fn wrap_for_display(text: &str, width: f32, font_size: f32, cx: &gpui::App) 
         }
     }
     output
-}
-
-fn is_player_placeholder(name: &str) -> bool {
-    name == "###" || name == "{}"
 }
 
 fn commander_label() -> &'static str {

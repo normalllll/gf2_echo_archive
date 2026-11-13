@@ -10,6 +10,7 @@ use crate::{
     catalog::{Category, Language, SourceInfo},
     discovery::validate_directories,
     extraction::{ExtractOptions, existing_output, extract_source},
+    roster::speakers::{COMMANDER_SPEAKERS, PLAYER_PLACEHOLDERS, is_player_placeholder},
 };
 use anyhow::{Context, Result, bail, ensure};
 use serde::{Deserialize, Serialize};
@@ -80,7 +81,10 @@ struct StoryFile<'a> {
     format_version: u32,
     text_locale: &'static str,
     order: &'static str,
+    /// The most common player-name placeholder; kept for existing readers.
     player_name_placeholder: &'static str,
+    /// Every player-name placeholder found in speakers and text.
+    player_name_placeholders: &'static [&'static str],
     lines: &'a [Line],
     control_rows: &'a [ControlRow],
     unresolved: &'a [Unresolved],
@@ -251,7 +255,8 @@ pub fn export_filtered(
         format_version: 1,
         text_locale: "CN",
         order: "source sheet row order; branches not evaluated",
-        player_name_placeholder: "###",
+        player_name_placeholder: PLAYER_PLACEHOLDERS[0],
+        player_name_placeholders: &PLAYER_PLACEHOLDERS,
         lines: &linked.lines,
         control_rows: &linked.control_rows,
         unresolved: &linked.unresolved,
@@ -605,6 +610,16 @@ fn copy_character_voices(linked: &mut Linked, directory: &Path) -> Result<()> {
     Ok(())
 }
 
+/// Folder name for one speaker under `by-speaker/`. The player-name placeholder
+/// becomes the commander, as in the UI; the data files keep the placeholder.
+fn speaker_folder(speaker: Option<&str>) -> String {
+    match speaker {
+        Some(name) if is_player_placeholder(name) => COMMANDER_SPEAKERS[0].into(),
+        Some(name) => safe_name(name),
+        None => "未知说话人".into(),
+    }
+}
+
 /// Copies linked WAVs to `<output>/Story/<script>/by-speaker/<speaker>/`.
 /// The language is part of the file name because CN and JP share cue names.
 fn copy_by_speaker(linked: &Linked, output: &Path) -> Result<usize> {
@@ -615,7 +630,7 @@ fn copy_by_speaker(linked: &Linked, output: &Path) -> Result<usize> {
             .script
             .strip_suffix(".book")
             .unwrap_or(&line.identity.script);
-        let speaker = line.speaker.as_deref().unwrap_or("未知说话人");
+        let speaker = speaker_folder(line.speaker.as_deref());
         for voice in &line.voices {
             let (Some(wav), Some(cue)) = (&voice.wav, &voice.cue) else {
                 continue;
@@ -624,7 +639,7 @@ fn copy_by_speaker(linked: &Linked, output: &Path) -> Result<usize> {
                 .join("Story")
                 .join(safe_name(script))
                 .join("by-speaker")
-                .join(safe_name(speaker))
+                .join(&speaker)
                 .join(format!(
                     "{:05}_{}_{}.wav",
                     line.identity.row,
@@ -722,5 +737,14 @@ mod tests {
         assert_eq!(safe_name("a/b:c"), "a_b_c");
         assert_eq!(safe_name(" . "), "_");
         assert_eq!(safe_name("###"), "###");
+    }
+
+    #[test]
+    fn player_placeholders_get_the_commander_folder() {
+        assert_eq!(speaker_folder(Some("{}")), "指挥官");
+        assert_eq!(speaker_folder(Some("###")), "指挥官");
+        assert_eq!(speaker_folder(Some("可露凯")), "可露凯");
+        assert_eq!(speaker_folder(Some("a/b")), "a_b");
+        assert_eq!(speaker_folder(None), "未知说话人");
     }
 }

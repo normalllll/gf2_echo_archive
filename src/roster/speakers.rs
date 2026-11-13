@@ -9,6 +9,9 @@ use std::collections::{BTreeMap, HashMap};
 pub const NON_CHARACTER_SPEAKERS: [&str; 7] =
     ["？？", "？？？", "??", "???", "未知对象", "###", "{}"];
 pub const COMMANDER_SPEAKERS: [&str; 1] = ["指挥官"];
+/// Player-name placeholders as they appear in the game's speaker and text
+/// tables; `{}` is by far the most common.
+pub const PLAYER_PLACEHOLDERS: [&str; 2] = ["{}", "###"];
 pub const TOP_UNMATCHED: usize = 50;
 /// A speaker binds to a resource shown on at least this many of its lines …
 pub const BIND_MIN_LINES: usize = 20;
@@ -66,6 +69,11 @@ impl SpeakerLookup {
             None => SpeakerMatch::Unmatched,
         }
     }
+}
+
+/// Whether a speaker name is the player-name placeholder (the commander).
+pub fn is_player_placeholder(speaker: &str) -> bool {
+    PLAYER_PLACEHOLDERS.contains(&speaker)
 }
 
 pub fn is_non_character(speaker: &str) -> bool {
