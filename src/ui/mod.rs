@@ -48,6 +48,22 @@ use theme::*;
 pub use widgets::fmt_count;
 
 pub const APP_TITLE: &str = "GF2 Echo Archive";
+/// Where the program is published; the only official source.
+pub const REPO_URL: &str = "https://github.com/normalllll/gf2_echo_archive";
+
+/// Shown next to the name wherever the window is titled, so a resold copy
+/// tells its buyer that the program is free.
+pub fn free_notice() -> &'static str {
+    tr!(
+        "免费软件，付费获得请立即退款",
+        "Free software. If you paid for it, ask for a refund"
+    )
+}
+
+/// The title of the system window (task bar and window switcher).
+fn window_title() -> String {
+    format!("{APP_TITLE} - {}", free_notice())
+}
 
 pub fn run() {
     gpui_platform::application()
@@ -68,7 +84,7 @@ pub fn run() {
             let options = WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 titlebar: Some(TitlebarOptions {
-                    title: Some(APP_TITLE.into()),
+                    title: Some(window_title().into()),
                     ..TitleBar::title_bar_options()
                 }),
                 window_min_size: Some(size(px(WINDOW_MIN.0), px(WINDOW_MIN.1))),
@@ -76,7 +92,7 @@ pub fn run() {
             };
             cx.spawn(async move |cx| {
                 cx.open_window(options, |window, cx| {
-                    window.set_window_title(APP_TITLE);
+                    window.set_window_title(&window_title());
                     let view = cx.new(|cx| EchoArchive::new(window, cx));
                     cx.new(|cx| Root::new(view, window, cx))
                 })?;
@@ -333,6 +349,7 @@ impl EchoArchive {
         let language = crate::i18n::resolve_for_system(choice);
         crate::i18n::set_language(language);
         gpui_component::set_locale(language.component_locale());
+        window.set_window_title(&window_title());
         self.update_placeholders(window, cx);
         cx.refresh_windows();
     }
@@ -555,7 +572,7 @@ impl EchoArchive {
         self.log_rows_key = Some(key);
     }
 
-    /// Title bar, left to right: logo and name, game directory, parse status
+    /// Title bar, left to right: logo, name and free notice, game directory, parse status
     /// and button; the window controls follow.
     fn render_title_bar(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let game = self.state.game_directory.trim();
@@ -578,6 +595,27 @@ impl EchoArchive {
                                 .text_size(px(13.))
                                 .font_weight(gpui::FontWeight::SEMIBOLD)
                                 .child(APP_TITLE),
+                        )
+                        .child(
+                            // Inside the drag area, so it has to occlude to be clickable.
+                            div()
+                                .id("free-notice")
+                                .occlude()
+                                .ml(px(4.))
+                                .text_size(px(12.))
+                                .text_color(hsla(WARNING))
+                                .cursor_pointer()
+                                .hover(|style| style.underline())
+                                .tooltip(|window, cx| {
+                                    gpui_component::tooltip::Tooltip::new(tr!(
+                                        "打开项目主页：{}",
+                                        "Open the project page: {}",
+                                        REPO_URL
+                                    ))
+                                    .build(window, cx)
+                                })
+                                .on_click(|_, _, cx| cx.open_url(REPO_URL))
+                                .child(free_notice()),
                         ),
                 )
                 .child(

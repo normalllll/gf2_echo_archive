@@ -2,7 +2,7 @@
 //! usage notice and version information.
 
 use super::{
-    APP_TITLE, EchoArchive, PathTarget,
+    APP_TITLE, EchoArchive, PathTarget, REPO_URL,
     state::{LogEntry, disclaimer},
     theme::*,
     widgets::{fmt_count, group_title, mono_note, page_scroll, segment, segmented, soft_button},
@@ -12,8 +12,8 @@ use crate::{
     settings::{LanguageChoice, ThemeChoice},
 };
 use gpui::{
-    AnyElement, Context, Entity, FontWeight, IntoElement, ParentElement, SharedString,
-    StatefulInteractiveElement, Styled, Window, div, prelude::FluentBuilder, px,
+    AnyElement, Context, Entity, FontWeight, InteractiveElement, IntoElement, ParentElement,
+    SharedString, StatefulInteractiveElement, Styled, Window, div, prelude::FluentBuilder, px,
 };
 use gpui_component::input::{Input, InputState};
 use std::path::PathBuf;
@@ -421,6 +421,30 @@ impl EchoArchive {
                 .into_any_element(),
             ],
         );
+        let repository_row = setting_row(
+            tr!("项目主页", "Project page"),
+            vec![
+                note(
+                    tr!(
+                        "本软件免费发布，这里是唯一的官方来源。",
+                        "This program is free; this is its only official source."
+                    ),
+                    TEXT_MUTED,
+                )
+                .into_any_element(),
+            ],
+            vec![
+                div()
+                    .id("settings-repository")
+                    .text_size(px(13.))
+                    .text_color(hsla(ACCENT))
+                    .cursor_pointer()
+                    .hover(|style| style.text_color(hsla(ACCENT_HOVER)).underline())
+                    .on_click(|_, _, cx| cx.open_url(REPO_URL))
+                    .child(REPO_URL)
+                    .into_any_element(),
+            ],
+        );
 
         let content = div()
             .w(px(width))
@@ -461,7 +485,10 @@ impl EchoArchive {
                     index_row("Live2D", live2d_status, has_live2d),
                 ],
             ))
-            .child(group(tr!("关于", "About"), vec![notice_row, version_row]));
+            .child(group(
+                tr!("关于", "About"),
+                vec![notice_row, version_row, repository_row],
+            ));
         page_scroll(
             "settings",
             &self.settings_scroll,

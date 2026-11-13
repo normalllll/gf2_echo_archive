@@ -369,6 +369,17 @@ impl EchoArchive {
                         .child(
                             div()
                                 .text_size(px(SIZE_GROUP))
+                                .line_height(px(19.))
+                                .text_color(hsla(WARNING))
+                                .child(format!(
+                                    "{} · {}",
+                                    super::free_notice(),
+                                    super::REPO_URL
+                                )),
+                        )
+                        .child(
+                            div()
+                                .text_size(px(SIZE_GROUP))
                                 .text_color(hsla(TEXT_MUTED))
                                 .child(tr!("只在第一次导出时询问，同意后不再显示。", "Asked only on the first export; not shown again after you accept.")),
                         ),

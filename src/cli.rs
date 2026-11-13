@@ -39,6 +39,13 @@ pub fn run(arguments: Vec<OsString>) -> Result<()> {
 --characters <game directory>"
             )
         );
+        println!(
+            "
+{}
+{}",
+            crate::ui::free_notice(),
+            crate::ui::REPO_URL
+        );
         return Ok(());
     }
     let root = PathBuf::from(arguments.get(1).context(tr!(
