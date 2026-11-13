@@ -10,7 +10,7 @@ publish = false
 
 [dependencies]
 anyhow = "1.0.104"
-cridecoder = { git = "https://github.com/normalllll/cridecoder", rev = "93e22560b7df397f554df0752b989153eaf1b104" }
+cridecoder = { git = "https://github.com/normalllll/cridecoder", rev = "5a562e77e417d8a2da3293f2950e122cf639047e" }
 gpui = { package = "gpui-pre", version = "0.3.11" }
 gpui-component = "0.9.0"
 gpui_platform = { package = "gpui-pre-platform", version = "0.3.11" }
